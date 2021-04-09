@@ -1,7 +1,7 @@
 defmodule RoverBot do
   @input_file "input.txt"
   @plateau_dim {5, 5}
-  @d ["N", "E", "S", "W"]
+  @directions ["N", "E", "S", "W"]
 
   def main() do
     case File.read(@input_file) do
@@ -23,7 +23,7 @@ defmodule RoverBot do
           |> Enum.chunk_every(2)
 
         if valid_plateau?(plateau_dim) do
-          resp =
+          final_coordinates =
             Enum.map(rovers_infos, fn [initial_coordinates, moves] ->
               initial_coordinates =
                 initial_coordinates
@@ -43,9 +43,9 @@ defmodule RoverBot do
                 |> move(initial_coordinates)
             end)
 
-          File.write("./output.txt", format_content(resp))
+          File.write("./output.txt", format_content(final_coordinates))
         else
-          IO.puts("Invalid plateau size, X ant Y axies must be >= 1")
+          File.write("./output.txt", "Invalid plateau size, X ant Y axies must be >= 1"))
         end
 
       {:error, reason} ->
@@ -53,7 +53,7 @@ defmodule RoverBot do
     end
   end
 
-  defp teste(movements, coordinates) do
+  defp validate_state(movements, coordinates) do
     if valid_coordinates?(coordinates) and
          movements
          |> List.first()
@@ -69,52 +69,52 @@ defmodule RoverBot do
   end
 
   defp move([head | tail], {x_pos, y_pos, "N"}) when head == "M" do
-    teste(tail, {x_pos, y_pos + 1, "N"})
+    validate_state(tail, {x_pos, y_pos + 1, "N"})
   end
 
   defp move([head | tail], {x_pos, y_pos, "S"}) when head == "M" do
-    teste(tail, {x_pos, y_pos - 1, "S"})
+    validate_state(tail, {x_pos, y_pos - 1, "S"})
   end
 
   defp move([head | tail], {x_pos, y_pos, "E"}) when head == "M" do
-    teste(tail, {x_pos + 1, y_pos, "E"})
+    validate_state(tail, {x_pos + 1, y_pos, "E"})
   end
 
   defp move([head | tail], {x_pos, y_pos, "W"}) when head == "M" do
-    teste(tail, {x_pos - 1, y_pos, "W"})
+    validate_state(tail, {x_pos - 1, y_pos, "W"})
   end
 
   defp move([head | tail], {x_pos, y_pos, direction}) when head == "L" do
-    direction_idx = Enum.find_index(@d, &(&1 == direction))
+    direction_idx = Enum.find_index(@directions, &(&1 == direction))
 
-    direction = Enum.at(@d, direction_idx - 1)
-    teste(tail, {x_pos, y_pos, direction})
+    direction = Enum.at(@directions, direction_idx - 1)
+    validate_state(tail, {x_pos, y_pos, direction})
   end
 
   defp move([head | tail], {x_pos, y_pos, direction}) when head == "R" do
-    direction_idx = Enum.find_index(@d, &(&1 == direction))
+    direction_idx = Enum.find_index(@directions, &(&1 == direction))
 
     case direction_idx + 1 do
       4 ->
-        teste(tail, {x_pos, y_pos, "N"})
+        validate_state(tail, {x_pos, y_pos, "N"})
 
       _ ->
-        direction = Enum.at(@d, direction_idx + 1)
-        teste(tail, {x_pos, y_pos, direction})
+        direction = Enum.at(@directions, direction_idx + 1)
+        validate_state(tail, {x_pos, y_pos, direction})
     end
 
     # case orientation do
     #   "N" ->
-    #     teste(tail, {x_pos, y_pos, "E"})
+    #     validate_state(tail, {x_pos, y_pos, "E"})
 
     #   "E" ->
-    #     teste(tail, {x_pos, y_pos, "S"})
+    #     validate_state(tail, {x_pos, y_pos, "S"})
 
     #   "S" ->
-    #     teste(tail, {x_pos, y_pos, "W"})
+    #     validate_state(tail, {x_pos, y_pos, "W"})
 
     #   "W" ->
-    #     teste(tail, {x_pos, y_pos, "N"})
+    #     validate_state(tail, {x_pos, y_pos, "N"})
     # end
   end
 
