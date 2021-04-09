@@ -20,9 +20,7 @@ defmodule RoverBot do
           |> List.to_tuple()
 
         rovers_infos =
-          coordinates_and_moves
-          |> Enum.map(&String.split(&1, " "))
-          |> Enum.chunk_every(2)
+          format_rovers_infos(coordinates_and_moves)
 
         if valid_plateau?(plateau_size) do
           final_coordinates =
@@ -99,6 +97,12 @@ defmodule RoverBot do
 
   defp move([head | tail], {x_pos, y_pos, orientation}) do
     {:error, "Invalid movement: #{head}"}
+  end
+
+  defp format_rovers_infos(data) do
+    data
+    |> Enum.map(&String.split(&1, " "))
+    |> Enum.chunk_every(2)
   end
 
   defp valid_plateau?({x_dim, y_dim}), do: x_dim >= 1 and y_dim >= 1
