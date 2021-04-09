@@ -19,19 +19,16 @@ defmodule RoverBot do
           |> Enum.map(&String.to_integer(&1))
           |> List.to_tuple()
 
-        rovers_infos =
-          format_rovers_infos(coordinates_and_moves)
+        rovers_infos = format_rovers_infos(coordinates_and_moves)
 
         if valid_plateau?(plateau_size) do
           final_coordinates =
             Enum.map(rovers_infos, fn [initial_coordinates, moves] ->
               initial_coordinates = format_coordinates(initial_coordinates)
 
-              moves =
-                moves
-                |> List.first()
-                |> String.graphemes()
-                |> move(initial_coordinates)
+              moves = format_moves(moves)
+
+              move(moves, initial_coordinates)
             end)
 
           File.write("./output.txt", format_content(final_coordinates))
@@ -42,13 +39,12 @@ defmodule RoverBot do
       {:error, reason} ->
         {:error, reason}
     end
+
+    IO.puts("end script")
   end
 
-  defp validate_state(movements, {x_axis, y_axis, direction} = coordinates) do
+  defp validate_coordinates(movements, {x_axis, y_axis, direction} = coordinates) do
     if valid_coordinates?(coordinates) do
-      #  movements
-      #  |> List.first()
-      #  |> valid_move?() do
       move(movements, coordinates)
     else
       {:error, "Out of plateau: {#{x_axis} #{y_axis} #{direction}}"}
@@ -59,27 +55,27 @@ defmodule RoverBot do
     {x_pos, y_pos, orientation}
   end
 
-  defp move([head | tail], {x_pos, y_pos, "N"}) when head == "M" do
-    validate_state(tail, {x_pos, y_pos + 1, "N"})
+  defp move(["M" | tail], {x_pos, y_pos, "N"}) do
+    validate_coordinates(tail, {x_pos, y_pos + 1, "N"})
   end
 
   defp move([head | tail], {x_pos, y_pos, "S"}) when head == "M" do
-    validate_state(tail, {x_pos, y_pos - 1, "S"})
+    validate_coordinates(tail, {x_pos, y_pos - 1, "S"})
   end
 
   defp move([head | tail], {x_pos, y_pos, "E"}) when head == "M" do
-    validate_state(tail, {x_pos + 1, y_pos, "E"})
+    validate_coordinates(tail, {x_pos + 1, y_pos, "E"})
   end
 
   defp move([head | tail], {x_pos, y_pos, "W"}) when head == "M" do
-    validate_state(tail, {x_pos - 1, y_pos, "W"})
+    validate_coordinates(tail, {x_pos - 1, y_pos, "W"})
   end
 
   defp move([head | tail], {x_pos, y_pos, direction}) when head == "L" do
     direction_idx = Enum.find_index(@directions, &(&1 == direction))
 
     direction = Enum.at(@directions, direction_idx - 1)
-    validate_state(tail, {x_pos, y_pos, direction})
+    validate_coordinates(tail, {x_pos, y_pos, direction})
   end
 
   defp move([head | tail], {x_pos, y_pos, direction}) when head == "R" do
@@ -87,11 +83,11 @@ defmodule RoverBot do
 
     case direction_idx + 1 do
       @directions_length ->
-        validate_state(tail, {x_pos, y_pos, "N"})
+        validate_coordinates(tail, {x_pos, y_pos, "N"})
 
       _ ->
         direction = Enum.at(@directions, direction_idx + 1)
-        validate_state(tail, {x_pos, y_pos, direction})
+        validate_coordinates(tail, {x_pos, y_pos, direction})
     end
   end
 
@@ -127,6 +123,12 @@ defmodule RoverBot do
       end
     )
     |> List.to_tuple()
+  end
+
+  defp format_moves(moves) do
+    moves
+    |> List.first()
+    |> String.graphemes()
   end
 
   defp format_content(content) do
