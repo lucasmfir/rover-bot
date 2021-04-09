@@ -1,17 +1,17 @@
 defmodule RoverBot do
   @input_file "input.txt"
-  @plateau_dim {5, 5}
+  @plateau_size {5, 5}
   @directions ["N", "E", "S", "W"]
 
   def main() do
     case File.read(@input_file) do
       {:ok, content} ->
-        [plateau_dim | coordinates_and_moves] =
+        [plateau_size | coordinates_and_moves] =
           content
           |> String.split("\n")
 
-        plateau_dim =
-          plateau_dim
+        plateau_size =
+          plateau_size
           |> String.trim()
           |> String.split(" ")
           |> Enum.map(&String.to_integer(&1))
@@ -22,7 +22,7 @@ defmodule RoverBot do
           |> Enum.map(&String.split(&1, " "))
           |> Enum.chunk_every(2)
 
-        if valid_plateau?(plateau_dim) do
+        if valid_plateau?(plateau_size) do
           final_coordinates =
             Enum.map(rovers_infos, fn [initial_coordinates, moves] ->
               initial_coordinates =
@@ -45,7 +45,7 @@ defmodule RoverBot do
 
           File.write("./output.txt", format_content(final_coordinates))
         else
-          File.write("./output.txt", "Invalid plateau size, X ant Y axies must be >= 1"))
+          File.write("./output.txt", "Invalid plateau size, X ant Y axies must be >= 1")
         end
 
       {:error, reason} ->
@@ -53,14 +53,14 @@ defmodule RoverBot do
     end
   end
 
-  defp validate_state(movements, coordinates) do
-    if valid_coordinates?(coordinates) and
-         movements
-         |> List.first()
-         |> valid_move?() do
+  defp validate_state(movements, {x_axis, y_axis, direction} = coordinates) do
+    if valid_coordinates?(coordinates) do
+      #  movements
+      #  |> List.first()
+      #  |> valid_move?() do
       move(movements, coordinates)
     else
-      IO.puts("Invalid")
+      {:error, "Out of plateau: {#{x_axis} #{y_axis} #{direction}}"}
     end
   end
 
@@ -104,22 +104,34 @@ defmodule RoverBot do
     end
   end
 
+  defp move([head | tail], {x_pos, y_pos, orientation}) do
+    {:error, "Invalid movement: #{head}"}
+  end
+
   defp valid_plateau?({x_dim, y_dim}), do: x_dim >= 1 and y_dim >= 1
 
   defp valid_coordinates?({x_pos, y_pos, _orientation}) do
-    {x_plateau, y_plateau} = @plateau_dim
+    {x_plateau, y_plateau} = @plateau_size
     x_pos >= 0 and x_pos <= x_plateau and y_pos >= 0 and y_pos <= y_plateau
   end
 
-  defp valid_move?(nil), do: true
+  # defp valid_move?(nil), do: true
 
-  defp valid_move?(movement) do
-    Regex.match?(~r/M|L|R/, movement)
-  end
+  # defp valid_move?(movement) do
+  #   Regex.match?(~r/M|L|R/, movement)
+  # end
 
   defp format_content(content) do
     content
-    |> Enum.map(fn {x, y, z} -> "#{x} #{y} #{z}\n" end)
+    |> Enum.map(fn c ->
+      case c do
+        {x, y, z} ->
+          "#{x} #{y} #{z}\n"
+
+        {:error, msg} ->
+          "#{msg}\n"
+      end
+    end)
     |> List.to_string()
   end
 end
