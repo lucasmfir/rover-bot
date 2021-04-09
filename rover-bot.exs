@@ -2,9 +2,11 @@ defmodule RoverBot do
   @input_file "input.txt"
   @plateau_size {5, 5}
   @directions ["N", "E", "S", "W"]
+  @directions_length 4
+  @only_digits ~r/\d/
 
-  def main() do
-    case File.read(@input_file) do
+  def main(input_file \\ @input_file) do
+    case File.read(input_file) do
       {:ok, content} ->
         [plateau_size | coordinates_and_moves] =
           content
@@ -25,16 +27,7 @@ defmodule RoverBot do
         if valid_plateau?(plateau_size) do
           final_coordinates =
             Enum.map(rovers_infos, fn [initial_coordinates, moves] ->
-              initial_coordinates =
-                initial_coordinates
-                |> Enum.map(
-                  &if Regex.match?(~r/\d/, &1) do
-                    String.to_integer(&1)
-                  else
-                    &1
-                  end
-                )
-                |> List.to_tuple()
+              initial_coordinates = format_coordinates(initial_coordinates)
 
               moves =
                 moves
@@ -95,7 +88,7 @@ defmodule RoverBot do
     direction_idx = Enum.find_index(@directions, &(&1 == direction))
 
     case direction_idx + 1 do
-      4 ->
+      @directions_length ->
         validate_state(tail, {x_pos, y_pos, "N"})
 
       _ ->
@@ -120,6 +113,17 @@ defmodule RoverBot do
   # defp valid_move?(movement) do
   #   Regex.match?(~r/M|L|R/, movement)
   # end
+  defp format_coordinates(coordinates) do
+    coordinates
+    |> Enum.map(
+      &if Regex.match?(@only_digits, &1) do
+        String.to_integer(&1)
+      else
+        &1
+      end
+    )
+    |> List.to_tuple()
+  end
 
   defp format_content(content) do
     content
