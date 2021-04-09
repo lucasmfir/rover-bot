@@ -102,20 +102,6 @@ defmodule RoverBot do
         direction = Enum.at(@directions, direction_idx + 1)
         validate_state(tail, {x_pos, y_pos, direction})
     end
-
-    # case orientation do
-    #   "N" ->
-    #     validate_state(tail, {x_pos, y_pos, "E"})
-
-    #   "E" ->
-    #     validate_state(tail, {x_pos, y_pos, "S"})
-
-    #   "S" ->
-    #     validate_state(tail, {x_pos, y_pos, "W"})
-
-    #   "W" ->
-    #     validate_state(tail, {x_pos, y_pos, "N"})
-    # end
   end
 
   defp valid_plateau?({x_dim, y_dim}), do: x_dim >= 1 and y_dim >= 1
@@ -137,3 +123,20 @@ defmodule RoverBot do
     |> List.to_string()
   end
 end
+
+# TODO
+# delete
+
+# case orientation do
+#   "N" ->
+#     validate_state(tail, {x_pos, y_pos, "E"})
+
+#   "E" ->
+#     validate_state(tail, {x_pos, y_pos, "S"})
+
+#   "S" ->
+#     validate_state(tail, {x_pos, y_pos, "W"})
+
+#   "W" ->
+#     validate_state(tail, {x_pos, y_pos, "N"})
+# end
