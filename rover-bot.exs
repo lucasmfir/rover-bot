@@ -13,7 +13,7 @@ defmodule RoverBot do
           content
           |> String.split("\n")
 
-        set_plateau_size(plateau_info)
+        cache_plateau_size(plateau_info)
 
         if valid_plateau?(plateau_size()) do
           rovers_infos = format_rovers_infos(coordinates_and_moves)
@@ -140,7 +140,7 @@ defmodule RoverBot do
     |> List.to_string()
   end
 
-  defp set_plateau_size(plateau_size) do
+  defp cache_plateau_size(plateau_size) do
     {x_dim, y_dim} =
       plateau_size
       |> String.trim()
