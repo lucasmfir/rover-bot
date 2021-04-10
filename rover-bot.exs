@@ -29,7 +29,10 @@ defmodule RoverBot do
 
           File.write("#{file_prefix}#{@output_file}", format_content(final_coordinates))
         else
-          File.write("#{file_prefix}#{@output_file}", "Invalid plateau size, X ant Y axies must be >= 1")
+          File.write(
+            "#{file_prefix}#{@output_file}",
+            "Invalid plateau size, X ant Y axies must be >= 1"
+          )
         end
 
       {:error, _} ->
@@ -55,7 +58,7 @@ defmodule RoverBot do
     validate_coordinates(next_moves, {x_pos, y_pos - 1, "S"})
   end
 
-  defp move(["M"| next_moves], {x_pos, y_pos, "E"}) do
+  defp move(["M" | next_moves], {x_pos, y_pos, "E"}) do
     validate_coordinates(next_moves, {x_pos + 1, y_pos, "E"})
   end
 
@@ -163,44 +166,69 @@ defmodule RoverBotTest do
   @input_file "input.txt"
   @output_file "output.txt"
 
-  describe "main/1" do
-    test "valid input file" do
-      file_prefix = "test_"
-      input_file_name = "#{file_prefix}#{@input_file}"
-      output_file_name = "#{file_prefix}#{@output_file}"
+  setup_all do
+    file_prefix = "test_"
+    input_file = "#{file_prefix}#{@input_file}"
+    output_file = "#{file_prefix}#{@output_file}"
 
-      File.write(input_file_name, single_valid_content())
+    {:ok, file_prefix: file_prefix, input_file: input_file, output_file: output_file}
+  end
+
+  describe "main/1" do
+    test "valid input file", %{
+      file_prefix: file_prefix,
+      input_file: input_file,
+      output_file: output_file
+    } do
+      File.write(input_file, single_valid_content())
 
       RoverBot.main(file_prefix)
 
       expected_content = "1 2 N\n"
-      {:ok, content} = File.read("#{file_prefix}#{@output_file}")
+      {:ok, content} = File.read(output_file)
 
       assert expected_content == content
 
-      File.rm(input_file_name)
-      File.rm(output_file_name)
+      File.rm(input_file)
+      File.rm(output_file)
     end
 
-    test "valid input file with more than one rover bot data" do
-      file_prefix = "test_"
-      input_file_name = "#{file_prefix}#{@input_file}"
-      output_file_name = "#{file_prefix}#{@output_file}"
-
-      File.write(input_file_name, multiple_valid_content())
+    test "valid input file with more than one rover bot data", %{
+      file_prefix: file_prefix,
+      input_file: input_file,
+      output_file: output_file
+    } do
+      File.write(input_file, multiple_valid_content())
 
       RoverBot.main(file_prefix)
 
       expected_content = "1 2 N\n5 1 E\n"
-      {:ok, content} = File.read("#{file_prefix}#{@output_file}")
+      {:ok, content} = File.read(output_file)
 
       assert expected_content == content
 
-      File.rm(input_file_name)
-      File.rm(output_file_name)
+      File.rm(input_file)
+      File.rm(output_file)
+    end
+
+    test "invalid input when there is invalid plateau size", %{
+      file_prefix: file_prefix,
+      input_file: input_file,
+      output_file: output_file
+    } do
+      File.write(input_file, invalid_plateau_content())
+
+      RoverBot.main(file_prefix)
+
+      expected_content = "Invalid plateau size, X ant Y axies must be >= 1"
+      {:ok, content} = File.read(output_file)
+
+      assert expected_content == content
+
+      File.rm(input_file)
+      File.rm(output_file)
     end
   end
-
 
   defp single_valid_content() do
     "5 5\n1 2 N\nLMLMLMLM"
@@ -208,6 +236,22 @@ defmodule RoverBotTest do
 
   defp multiple_valid_content() do
     "5 5\n1 2 N\nLMLMLMLM\n3 3 E\nMMRMMRMRRM"
+  end
+
+  defp invalid_plateau_content() do
+    "5 0\n1 2 N\nLMLMLMLM"
+  end
+
+  defp invalid_coordinate_content() do
+    "5 0\n1 2 T\nLMLMLMLM"
+  end
+
+  defp invalid_move_content() do
+    "5 0\n1 2 N\nLMLLGMLM"
+  end
+
+  defp invalid_out_of_plateau_content() do
+    "5 0\n1 2 N\nLMLLMMMMMMLM"
   end
 end
 
