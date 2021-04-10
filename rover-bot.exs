@@ -53,26 +53,26 @@ defmodule RoverBot do
     validate_coordinates(tail, {x_pos, y_pos + 1, "N"})
   end
 
-  defp move([head | tail], {x_pos, y_pos, "S"}) when head == "M" do
+  defp move(["M" | tail], {x_pos, y_pos, "S"}) do
     validate_coordinates(tail, {x_pos, y_pos - 1, "S"})
   end
 
-  defp move([head | tail], {x_pos, y_pos, "E"}) when head == "M" do
+  defp move(["M"| tail], {x_pos, y_pos, "E"}) do
     validate_coordinates(tail, {x_pos + 1, y_pos, "E"})
   end
 
-  defp move([head | tail], {x_pos, y_pos, "W"}) when head == "M" do
+  defp move(["M" | tail], {x_pos, y_pos, "W"}) do
     validate_coordinates(tail, {x_pos - 1, y_pos, "W"})
   end
 
-  defp move([head | tail], {x_pos, y_pos, direction}) when head == "L" do
+  defp move(["L" | tail], {x_pos, y_pos, direction}) do
     direction_idx = Enum.find_index(@directions, &(&1 == direction))
 
     direction = Enum.at(@directions, direction_idx - 1)
     validate_coordinates(tail, {x_pos, y_pos, direction})
   end
 
-  defp move([head | tail], {x_pos, y_pos, direction}) when head == "R" do
+  defp move(["R" | tail], {x_pos, y_pos, direction}) do
     direction_idx = Enum.find_index(@directions, &(&1 == direction))
 
     case direction_idx + 1 do
@@ -85,8 +85,8 @@ defmodule RoverBot do
     end
   end
 
-  defp move([head | tail], {x_pos, y_pos, orientation}) do
-    {:error, "Invalid movement: #{head}"}
+  defp move([invalid_move | _tail], _coordinates) do
+    {:error, "Invalid movement: #{invalid_move}"}
   end
 
   defp format_rovers_infos(data) do
