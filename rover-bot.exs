@@ -22,9 +22,12 @@ defmodule RoverBot do
             Enum.map(rovers_infos, fn [initial_coordinates, moves] ->
               initial_coordinates = format_coordinates(initial_coordinates)
 
-              moves = format_moves(moves)
-
-              move(moves, initial_coordinates)
+              if valid_coordinates?(initial_coordinates) do
+                moves = format_moves(moves)
+                move(moves, initial_coordinates)
+              else
+                {:error, "Invalid coordinates"}
+              end
             end)
 
           File.write("#{file_prefix}#{@output_file}", format_content(final_coordinates))
@@ -98,9 +101,9 @@ defmodule RoverBot do
 
   defp valid_plateau?({x_dim, y_dim}), do: x_dim >= 1 and y_dim >= 1
 
-  defp valid_coordinates?({x_pos, y_pos, _orientation}) do
+  defp valid_coordinates?({x_pos, y_pos, direction}) do
     {x_plateau, y_plateau} = plateau_size()
-    x_pos >= 0 and x_pos <= x_plateau and y_pos >= 0 and y_pos <= y_plateau
+    x_pos >= 0 and x_pos <= x_plateau and y_pos >= 0 and y_pos <= y_plateau and Enum.member?(@directions, direction)
   end
 
   defp format_coordinates(coordinates) do
@@ -228,6 +231,60 @@ defmodule RoverBotTest do
       File.rm(input_file)
       File.rm(output_file)
     end
+
+    test "invalid input when there is an invalid initial coordinate", %{
+      file_prefix: file_prefix,
+      input_file: input_file,
+      output_file: output_file
+    } do
+      File.write(input_file, invalid_coordinate_content())
+
+      RoverBot.main(file_prefix)
+
+      expected_content = "Invalid coordinates\n"
+      {:ok, content} = File.read(output_file)
+
+      assert expected_content == content
+
+      File.rm(input_file)
+      File.rm(output_file)
+    end
+
+    test "invalid input when there is a invalid move", %{
+      file_prefix: file_prefix,
+      input_file: input_file,
+      output_file: output_file
+    } do
+      File.write(input_file, invalid_move_content())
+
+      RoverBot.main(file_prefix)
+
+      expected_content = "Invalid movement: G\n"
+      {:ok, content} = File.read(output_file)
+
+      assert expected_content == content
+
+      File.rm(input_file)
+      File.rm(output_file)
+    end
+
+    test "invalid input when rover bot passes plateau boundary", %{
+      file_prefix: file_prefix,
+      input_file: input_file,
+      output_file: output_file
+    } do
+      File.write(input_file, invalid_out_of_plateau_content())
+
+      RoverBot.main(file_prefix)
+
+      expected_content = "Out of plateau: {6 2 E}\n"
+      {:ok, content} = File.read(output_file)
+
+      assert expected_content == content
+
+      File.rm(input_file)
+      File.rm(output_file)
+    end
   end
 
   defp single_valid_content() do
@@ -243,21 +300,18 @@ defmodule RoverBotTest do
   end
 
   defp invalid_coordinate_content() do
-    "5 0\n1 2 T\nLMLMLMLM"
+    "5 5\n1 2 P\nLMLMLMLM"
   end
 
   defp invalid_move_content() do
-    "5 0\n1 2 N\nLMLLGMLM"
+    "5 5\n1 2 N\nLMLLGMLM"
   end
 
   defp invalid_out_of_plateau_content() do
-    "5 0\n1 2 N\nLMLLMMMMMMLM"
+    "5 5\n1 2 N\nLMLLMMMMMMLM"
   end
 end
 
 IO.puts("Start script...")
 RoverBot.main()
 IO.puts("...end script")
-
-# :ets.new(:plateau, [:named_table])
-# :ets.insert(:plateau, {:size, 4})
