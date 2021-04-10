@@ -37,9 +37,9 @@ defmodule RoverBot do
     IO.puts("end script")
   end
 
-  defp validate_coordinates(movements, {x_axis, y_axis, direction} = coordinates) do
+  defp validate_coordinates(moves, {x_axis, y_axis, direction} = coordinates) do
     if valid_coordinates?(coordinates) do
-      move(movements, coordinates)
+      move(moves, coordinates)
     else
       {:error, "Out of plateau: {#{x_axis} #{y_axis} #{direction}}"}
     end
