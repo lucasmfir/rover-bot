@@ -39,15 +39,10 @@ MMRMMRMRRM
 To run the script use the following command:
   
 ```sh
-iex rover-bot.exs
+elixir rover-bot.exs
 ```
 
-After that you will be able to choose between:
-
-- 1 : run script
-- 2 : run tests
-
-If you choose the option `1`, a file `output.txt` will be created showing the rovers final coordinates.
+After script end it's execution, a file `output.txt` will be created showing the rovers final coordinates and tests will be running.
   
 ## Assumptions
 
