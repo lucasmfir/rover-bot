@@ -103,7 +103,9 @@ defmodule RoverBot do
 
   defp valid_coordinates?({x_pos, y_pos, direction}) do
     {x_plateau, y_plateau} = plateau_size()
-    x_pos >= 0 and x_pos <= x_plateau and y_pos >= 0 and y_pos <= y_plateau and Enum.member?(@directions, direction)
+
+    x_pos >= 0 and x_pos <= x_plateau and y_pos >= 0 and y_pos <= y_plateau and
+      Enum.member?(@directions, direction)
   end
 
   defp format_coordinates(coordinates) do
@@ -285,6 +287,24 @@ defmodule RoverBotTest do
       File.rm(input_file)
       File.rm(output_file)
     end
+
+    test "input with valid and invalid rover bot data", %{
+      file_prefix: file_prefix,
+      input_file: input_file,
+      output_file: output_file
+    } do
+      File.write(input_file, valid_and_invalid_content())
+
+      RoverBot.main(file_prefix)
+
+      expected_content = "1 2 N\nInvalid movement: Y\n"
+      {:ok, content} = File.read(output_file)
+
+      assert expected_content == content
+
+      File.rm(input_file)
+      File.rm(output_file)
+    end
   end
 
   defp single_valid_content() do
@@ -309,6 +329,10 @@ defmodule RoverBotTest do
 
   defp invalid_out_of_plateau_content() do
     "5 5\n1 2 N\nLMLLMMMMMMLM"
+  end
+
+  defp valid_and_invalid_content() do
+    "5 5\n1 2 N\nLMLMLMLM\n3 3 E\nMMRYMMRMRRM"
   end
 end
 
