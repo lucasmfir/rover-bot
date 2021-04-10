@@ -30,8 +30,8 @@ defmodule RoverBot do
           File.write("./output.txt", "Invalid plateau size, X ant Y axies must be >= 1")
         end
 
-      {:error, reason} ->
-        {:error, reason}
+      {:error, _} ->
+        File.write("./output.txt", "Input file not found")
     end
 
     IO.puts("end script")
@@ -45,47 +45,45 @@ defmodule RoverBot do
     end
   end
 
-  defp move([], {x_pos, y_pos, orientation}) do
-    {x_pos, y_pos, orientation}
+  defp move([], coordinates), do: coordinates
+
+  defp move(["M" | next_moves], {x_pos, y_pos, "N"}) do
+    validate_coordinates(next_moves, {x_pos, y_pos + 1, "N"})
   end
 
-  defp move(["M" | tail], {x_pos, y_pos, "N"}) do
-    validate_coordinates(tail, {x_pos, y_pos + 1, "N"})
+  defp move(["M" | next_moves], {x_pos, y_pos, "S"}) do
+    validate_coordinates(next_moves, {x_pos, y_pos - 1, "S"})
   end
 
-  defp move(["M" | tail], {x_pos, y_pos, "S"}) do
-    validate_coordinates(tail, {x_pos, y_pos - 1, "S"})
+  defp move(["M"| next_moves], {x_pos, y_pos, "E"}) do
+    validate_coordinates(next_moves, {x_pos + 1, y_pos, "E"})
   end
 
-  defp move(["M"| tail], {x_pos, y_pos, "E"}) do
-    validate_coordinates(tail, {x_pos + 1, y_pos, "E"})
+  defp move(["M" | next_moves], {x_pos, y_pos, "W"}) do
+    validate_coordinates(next_moves, {x_pos - 1, y_pos, "W"})
   end
 
-  defp move(["M" | tail], {x_pos, y_pos, "W"}) do
-    validate_coordinates(tail, {x_pos - 1, y_pos, "W"})
-  end
-
-  defp move(["L" | tail], {x_pos, y_pos, direction}) do
+  defp move(["L" | next_moves], {x_pos, y_pos, direction}) do
     direction_idx = Enum.find_index(@directions, &(&1 == direction))
 
     direction = Enum.at(@directions, direction_idx - 1)
-    validate_coordinates(tail, {x_pos, y_pos, direction})
+    validate_coordinates(next_moves, {x_pos, y_pos, direction})
   end
 
-  defp move(["R" | tail], {x_pos, y_pos, direction}) do
+  defp move(["R" | next_moves], {x_pos, y_pos, direction}) do
     direction_idx = Enum.find_index(@directions, &(&1 == direction))
 
     case direction_idx + 1 do
       @directions_length ->
-        validate_coordinates(tail, {x_pos, y_pos, "N"})
+        validate_coordinates(next_moves, {x_pos, y_pos, "N"})
 
       _ ->
         direction = Enum.at(@directions, direction_idx + 1)
-        validate_coordinates(tail, {x_pos, y_pos, direction})
+        validate_coordinates(next_moves, {x_pos, y_pos, direction})
     end
   end
 
-  defp move([invalid_move | _tail], _coordinates) do
+  defp move([invalid_move | _next_moves], _coordinates) do
     {:error, "Invalid movement: #{invalid_move}"}
   end
 
