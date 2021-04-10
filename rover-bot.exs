@@ -154,19 +154,66 @@ defmodule RoverBot do
   end
 end
 
-# TODO
-# delete
+ExUnit.start()
 
-# case orientation do
-#   "N" ->
-#     validate_state(tail, {x_pos, y_pos, "E"})
+defmodule RoverBotTest do
+  use ExUnit.Case
+  alias RoverBot
 
-#   "E" ->
-#     validate_state(tail, {x_pos, y_pos, "S"})
+  @input_file "input.txt"
+  @output_file "output.txt"
 
-#   "S" ->
-#     validate_state(tail, {x_pos, y_pos, "W"})
+  describe "main/1" do
+    test "valid input file" do
+      file_prefix = "test_"
+      input_file_name = "#{file_prefix}#{@input_file}"
+      output_file_name = "#{file_prefix}#{@output_file}"
 
-#   "W" ->
-#     validate_state(tail, {x_pos, y_pos, "N"})
-# end
+      File.write(input_file_name, single_valid_content())
+
+      RoverBot.main(file_prefix)
+
+      expected_content = "1 2 N\n"
+      {:ok, content} = File.read("#{file_prefix}#{@output_file}")
+
+      assert expected_content == content
+
+      File.rm(input_file_name)
+      File.rm(output_file_name)
+    end
+
+    test "valid input file with more than one rover bot data" do
+      file_prefix = "test_"
+      input_file_name = "#{file_prefix}#{@input_file}"
+      output_file_name = "#{file_prefix}#{@output_file}"
+
+      File.write(input_file_name, multiple_valid_content())
+
+      RoverBot.main(file_prefix)
+
+      expected_content = "1 2 N\n5 1 E\n"
+      {:ok, content} = File.read("#{file_prefix}#{@output_file}")
+
+      assert expected_content == content
+
+      File.rm(input_file_name)
+      File.rm(output_file_name)
+    end
+  end
+
+
+  defp single_valid_content() do
+    "5 5\n1 2 N\nLMLMLMLM"
+  end
+
+  defp multiple_valid_content() do
+    "5 5\n1 2 N\nLMLMLMLM\n3 3 E\nMMRMMRMRRM"
+  end
+end
+
+IO.puts("Start script...")
+RoverBot.main()
+IO.puts("...end script")
+
+# :ets.new(:plateau, [:named_table])
+# :ets.insert(:plateau, {:size, 4})
