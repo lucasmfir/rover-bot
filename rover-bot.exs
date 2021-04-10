@@ -1,11 +1,13 @@
 defmodule RoverBot do
-  @default_input_file "input.txt"
+  @input_file "input.txt"
+  @output_file "output.txt"
+  @default_file_prefix ""
   @directions ["N", "E", "S", "W"]
   @directions_length 4
   @only_digits ~r/\d/
 
-  def main(input_file \\ @default_input_file) do
-    case File.read(input_file) do
+  def main(file_prefix \\ @default_file_prefix) do
+    case File.read("#{file_prefix}#{@input_file}") do
       {:ok, content} ->
         [plateau_info | coordinates_and_moves] =
           content
@@ -25,16 +27,14 @@ defmodule RoverBot do
               move(moves, initial_coordinates)
             end)
 
-          File.write("./output.txt", format_content(final_coordinates))
+          File.write("#{file_prefix}#{@output_file}", format_content(final_coordinates))
         else
-          File.write("./output.txt", "Invalid plateau size, X ant Y axies must be >= 1")
+          File.write("#{file_prefix}#{@output_file}", "Invalid plateau size, X ant Y axies must be >= 1")
         end
 
       {:error, _} ->
-        File.write("./output.txt", "Input file not found")
+        File.write("#{file_prefix}#{@output_file}", "Input file not found")
     end
-
-    IO.puts("end script")
   end
 
   defp validate_coordinates(moves, {x_axis, y_axis, direction} = coordinates) do
