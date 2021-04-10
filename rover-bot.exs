@@ -16,21 +16,13 @@ defmodule RoverBot do
         cache_plateau_size(plateau_info)
 
         if valid_plateau?(plateau_size()) do
-          rovers_infos = format_rovers_infos(coordinates_and_moves)
+          coordinates_response =
+            coordinates_and_moves
+            |> format_rovers_infos()
+            |> start_rovers()
+            |> format_content()
 
-          final_coordinates =
-            Enum.map(rovers_infos, fn [initial_coordinates, moves] ->
-              initial_coordinates = format_coordinates(initial_coordinates)
-
-              if valid_coordinates?(initial_coordinates) do
-                moves = format_moves(moves)
-                move(moves, initial_coordinates)
-              else
-                {:error, "Invalid coordinates"}
-              end
-            end)
-
-          File.write("#{file_prefix}#{@output_file}", format_content(final_coordinates))
+          File.write("#{file_prefix}#{@output_file}", coordinates_response)
         else
           File.write(
             "#{file_prefix}#{@output_file}",
@@ -138,6 +130,19 @@ defmodule RoverBot do
       end
     end)
     |> List.to_string()
+  end
+
+  defp start_rovers(rovers_infos) do
+    Enum.map(rovers_infos, fn [initial_coordinates, moves] ->
+      initial_coordinates = format_coordinates(initial_coordinates)
+
+      if valid_coordinates?(initial_coordinates) do
+        moves = format_moves(moves)
+        move(moves, initial_coordinates)
+      else
+        {:error, "Invalid coordinates"}
+      end
+    end)
   end
 
   defp cache_plateau_size(plateau_size) do
