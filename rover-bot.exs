@@ -1,27 +1,21 @@
 defmodule RoverBot do
-  @input_file "input.txt"
-  @plateau_size {5, 5}
+  @default_input_file "input.txt"
   @directions ["N", "E", "S", "W"]
   @directions_length 4
   @only_digits ~r/\d/
 
-  def main(input_file \\ @input_file) do
+  def main(input_file \\ @default_input_file) do
     case File.read(input_file) do
       {:ok, content} ->
-        [plateau_size | coordinates_and_moves] =
+        [plateau_info | coordinates_and_moves] =
           content
           |> String.split("\n")
 
-        plateau_size =
-          plateau_size
-          |> String.trim()
-          |> String.split(" ")
-          |> Enum.map(&String.to_integer(&1))
-          |> List.to_tuple()
+        set_plateau_size(plateau_info)
 
-        rovers_infos = format_rovers_infos(coordinates_and_moves)
+        if valid_plateau?(plateau_size()) do
+          rovers_infos = format_rovers_infos(coordinates_and_moves)
 
-        if valid_plateau?(plateau_size) do
           final_coordinates =
             Enum.map(rovers_infos, fn [initial_coordinates, moves] ->
               initial_coordinates = format_coordinates(initial_coordinates)
@@ -104,7 +98,7 @@ defmodule RoverBot do
   defp valid_plateau?({x_dim, y_dim}), do: x_dim >= 1 and y_dim >= 1
 
   defp valid_coordinates?({x_pos, y_pos, _orientation}) do
-    {x_plateau, y_plateau} = @plateau_size
+    {x_plateau, y_plateau} = plateau_size()
     x_pos >= 0 and x_pos <= x_plateau and y_pos >= 0 and y_pos <= y_plateau
   end
 
@@ -138,6 +132,27 @@ defmodule RoverBot do
       end
     end)
     |> List.to_string()
+  end
+
+  defp set_plateau_size(plateau_size) do
+    {x_dim, y_dim} =
+      plateau_size
+      |> String.trim()
+      |> String.split(" ")
+      |> Enum.map(&String.to_integer(&1))
+      |> List.to_tuple()
+
+    :ets.new(:plateau, [:named_table])
+    :ets.insert(:plateau, [{:x_dim, x_dim}, {:y_dim, y_dim}])
+
+    {x_dim, y_dim}
+  end
+
+  defp plateau_size() do
+    [x_dim: x_dim] = :ets.lookup(:plateau, :x_dim)
+    [y_dim: y_dim] = :ets.lookup(:plateau, :y_dim)
+
+    {x_dim, y_dim}
   end
 end
 
