@@ -108,11 +108,6 @@ defmodule RoverBot do
     x_pos >= 0 and x_pos <= x_plateau and y_pos >= 0 and y_pos <= y_plateau
   end
 
-  # defp valid_move?(nil), do: true
-
-  # defp valid_move?(movement) do
-  #   Regex.match?(~r/M|L|R/, movement)
-  # end
   defp format_coordinates(coordinates) do
     coordinates
     |> Enum.map(
@@ -133,10 +128,10 @@ defmodule RoverBot do
 
   defp format_content(content) do
     content
-    |> Enum.map(fn c ->
-      case c do
-        {x, y, z} ->
-          "#{x} #{y} #{z}\n"
+    |> Enum.map(fn line ->
+      case line do
+        {x_axis, y_axis, direction} ->
+          "#{x_axis} #{y_axis} #{direction}\n"
 
         {:error, msg} ->
           "#{msg}\n"
